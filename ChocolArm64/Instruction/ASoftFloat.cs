@@ -261,5 +261,117 @@ namespace ChocolArm64.Instruction
             uint new_exp = (uint)((exponent + 127) & 0xFF) << 23;
             return BitConverter.Int32BitsToSingle((int)((x_sign << 31) | new_exp | (x_mantissa << 13)));
         }
+
+        public static float MaxNum(float op1, float op2)
+        {
+            return (float)MaxNum((double)op1, (double)op2);
+        }
+
+        public static double MaxNum(double op1, double op2)
+        {
+            ulong op1_bits = (ulong)BitConverter.DoubleToInt64Bits(op1);
+            ulong op2_bits = (ulong)BitConverter.DoubleToInt64Bits(op1);
+
+            if (IsQNaN(op1_bits) && !IsQNaN(op2_bits))
+            {
+                op1 = double.NegativeInfinity;
+            }
+            else if (!IsQNaN(op1_bits) && IsQNaN(op2_bits))
+            {
+                op2 = double.NegativeInfinity;
+            }
+
+            return Max(op1, op2);
+        }
+
+        public static float Max(float op1, float op2)
+        {
+            return (float)Max((double)op1, (double)op2);
+        }
+
+        public static double Max(double op1, double op2)
+        {
+            ulong op1_bits = (ulong)BitConverter.DoubleToInt64Bits(op1);
+            ulong op2_bits = (ulong)BitConverter.DoubleToInt64Bits(op1);
+
+            if (((op1_bits | op2_bits) & 0x7FFFFFFFFFFFFFFF) == 0)
+            {
+                // Return the most positive zero
+                return BitConverter.Int64BitsToDouble((long)(op1_bits & op2_bits));
+            }
+
+            // If both values are NaNs, give priority to signaling NaNs
+            bool op1_snan = IsSNaN(op1_bits);
+            bool op2_snan = IsSNaN(op2_bits);
+
+            if ((op1 > op2 || double.IsNaN(op1)) && (op1_snan || !op2_snan))
+            {
+                return op1;
+            }
+
+            return op2;
+        }
+
+        public static float MinNum(float op1, float op2)
+        {
+            return (float)MinNum((double)op1, (double)op2);
+        }
+
+        public static double MinNum(double op1, double op2)
+        {
+            ulong op1_bits = (ulong)BitConverter.DoubleToInt64Bits(op1);
+            ulong op2_bits = (ulong)BitConverter.DoubleToInt64Bits(op1);
+
+            if (IsQNaN(op1_bits) && !IsQNaN(op2_bits))
+            {
+                op1 = double.PositiveInfinity;
+            }
+            else if (!IsQNaN(op1_bits) && IsQNaN(op2_bits))
+            {
+                op2 = double.PositiveInfinity;
+            }
+
+            return Min(op1, op2);
+        }
+
+        public static float Min(float op1, float op2)
+        {
+            return (float)Min((double)op1, (double)op2);
+        }
+
+        public static double Min(double op1, double op2)
+        {
+            ulong op1_bits = (ulong)BitConverter.DoubleToInt64Bits(op1);
+            ulong op2_bits = (ulong)BitConverter.DoubleToInt64Bits(op1);
+
+            if (((op1_bits | op2_bits) & 0x7FFF_FFFF_FFFF_FFFF) == 0)
+            {
+                // Return the most negative zero
+                return BitConverter.Int64BitsToDouble((long)(op1_bits | op2_bits));
+            }
+
+            // If both values are NaNs, give priority to signaling NaNs
+            bool op1_snan = IsSNaN(op1_bits);
+            bool op2_snan = IsSNaN(op2_bits);
+
+            if ((op1 < op2 || double.IsNaN(op1)) && (op1_snan || !op2_snan))
+            {
+                return op1;
+            }
+
+            return op2;
+        }
+
+        private static bool IsQNaN(ulong x)
+        {
+            return (x & 0x000F_FFFF_FFFF_FFFF) != 0 &&
+                   (x & 0x7FF8_0000_0000_0000) == 0x7FF0_0000_0000_0000;
+        }
+
+        private static bool IsSNaN(ulong x)
+        {
+            return (x & 0x000F_FFFF_FFFF_FFFF) != 0 &&
+                   (x & 0x7FF8_0000_0000_0000) == 0x7FF8_0000_0000_0000;
+        }
     }
 }
