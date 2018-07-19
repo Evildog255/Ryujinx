@@ -365,13 +365,13 @@ namespace ChocolArm64.Instruction
         private static bool IsQNaN(ulong x)
         {
             return (x & 0x000F_FFFF_FFFF_FFFF) != 0 &&
-                   (x & 0x7FF8_0000_0000_0000) == 0x7FF0_0000_0000_0000;
+                   (x & 0x7FF8_0000_0000_0000) == 0x7FF8_0000_0000_0000;
         }
 
         private static bool IsSNaN(ulong x)
         {
             return (x & 0x000F_FFFF_FFFF_FFFF) != 0 &&
-                   (x & 0x7FF8_0000_0000_0000) == 0x7FF8_0000_0000_0000;
+                   (x & 0x7FF8_0000_0000_0000) == 0x7FF0_0000_0000_0000;
         }
     }
 }
