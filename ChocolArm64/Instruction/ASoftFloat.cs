@@ -79,7 +79,7 @@ namespace ChocolArm64.Instruction
                 if (scaled == 0)
                 {
                     // Zero -> Infinity
-                    return BitConverter.Int64BitsToDouble((long)(x_sign | 0x7ff0000000000000));
+                    return BitConverter.Int64BitsToDouble((long)(x_sign | 0x7FF0000000000000));
                 }
 
                 // Denormal
@@ -94,7 +94,7 @@ namespace ChocolArm64.Instruction
             if (x_sign != 0)
             {
                 // Negative -> NaN
-                return BitConverter.Int64BitsToDouble((long)0x7ff8000000000000);
+                return BitConverter.Int64BitsToDouble((long)0x7FF8000000000000);
             }
 
             if (x_exp == 0x7ff && scaled == 0)
@@ -153,7 +153,7 @@ namespace ChocolArm64.Instruction
                 if (scaled == 0)
                 {
                     // Zero -> Infinity
-                    return BitConverter.Int64BitsToDouble((long)(x_sign | 0x7ff0000000000000));
+                    return BitConverter.Int64BitsToDouble((long)(x_sign | 0x7FF0000000000000));
                 }
 
                 // Denormal
@@ -208,8 +208,8 @@ namespace ChocolArm64.Instruction
             ulong op1_other = op1_bits & 0x7FFFFFFFFFFFFFFF;
             ulong op2_other = op2_bits & 0x7FFFFFFFFFFFFFFF;
 
-            bool inf1 = op1_other == 0x7ff0000000000000;
-            bool inf2 = op2_other == 0x7ff0000000000000;
+            bool inf1 = op1_other == 0x7FF0000000000000;
+            bool inf2 = op2_other == 0x7FF0000000000000;
             bool zero1 = op1_other == 0;
             bool zero2 = op2_other == 0;
 
@@ -220,7 +220,7 @@ namespace ChocolArm64.Instruction
             else if (inf1 || inf2)
             {
                 // Infinity
-                return BitConverter.Int64BitsToDouble((long)(0x7ff0000000000000 | (op1_sign ^ op2_sign)));
+                return BitConverter.Int64BitsToDouble((long)(0x7FF0000000000000 | (op1_sign ^ op2_sign)));
             }
 
             return 2.0 + op1 * op2;
@@ -294,7 +294,7 @@ namespace ChocolArm64.Instruction
             ulong op1_bits = (ulong)BitConverter.DoubleToInt64Bits(op1);
             ulong op2_bits = (ulong)BitConverter.DoubleToInt64Bits(op1);
 
-            if (((op1_bits | op2_bits) & 0x7FFFFFFFFFFFFFFF) == 0)
+            if (((op1_bits | op2_bits) & 0x7FFF_FFFF_FFFF_FFFF) == 0)
             {
                 // Return the most positive zero
                 return BitConverter.Int64BitsToDouble((long)(op1_bits & op2_bits));
