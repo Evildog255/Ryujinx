@@ -270,7 +270,7 @@ namespace ChocolArm64.Instruction
         public static double MaxNum(double op1, double op2)
         {
             ulong op1_bits = (ulong)BitConverter.DoubleToInt64Bits(op1);
-            ulong op2_bits = (ulong)BitConverter.DoubleToInt64Bits(op1);
+            ulong op2_bits = (ulong)BitConverter.DoubleToInt64Bits(op2);
 
             if (IsQNaN(op1_bits) && !IsQNaN(op2_bits))
             {
@@ -292,7 +292,7 @@ namespace ChocolArm64.Instruction
         public static double Max(double op1, double op2)
         {
             ulong op1_bits = (ulong)BitConverter.DoubleToInt64Bits(op1);
-            ulong op2_bits = (ulong)BitConverter.DoubleToInt64Bits(op1);
+            ulong op2_bits = (ulong)BitConverter.DoubleToInt64Bits(op2);
 
             if (((op1_bits | op2_bits) & 0x7FFF_FFFF_FFFF_FFFF) == 0)
             {
@@ -320,7 +320,7 @@ namespace ChocolArm64.Instruction
         public static double MinNum(double op1, double op2)
         {
             ulong op1_bits = (ulong)BitConverter.DoubleToInt64Bits(op1);
-            ulong op2_bits = (ulong)BitConverter.DoubleToInt64Bits(op1);
+            ulong op2_bits = (ulong)BitConverter.DoubleToInt64Bits(op2);
 
             if (IsQNaN(op1_bits) && !IsQNaN(op2_bits))
             {
@@ -342,7 +342,7 @@ namespace ChocolArm64.Instruction
         public static double Min(double op1, double op2)
         {
             ulong op1_bits = (ulong)BitConverter.DoubleToInt64Bits(op1);
-            ulong op2_bits = (ulong)BitConverter.DoubleToInt64Bits(op1);
+            ulong op2_bits = (ulong)BitConverter.DoubleToInt64Bits(op2);
 
             if (((op1_bits | op2_bits) & 0x7FFF_FFFF_FFFF_FFFF) == 0)
             {
