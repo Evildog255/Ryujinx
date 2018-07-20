@@ -264,7 +264,9 @@ namespace ChocolArm64.Instruction
 
         public static float MaxNum(float op1, float op2)
         {
-            return (float)MaxNum((double)op1, (double)op2);
+            return (float)MaxNum(
+                ConvertSingleToDoubleWithSNaN(op1),
+                ConvertSingleToDoubleWithSNaN(op2));
         }
 
         public static double MaxNum(double op1, double op2)
@@ -286,7 +288,9 @@ namespace ChocolArm64.Instruction
 
         public static float Max(float op1, float op2)
         {
-            return (float)Max((double)op1, (double)op2);
+            return (float)Max(
+                ConvertSingleToDoubleWithSNaN(op1),
+                ConvertSingleToDoubleWithSNaN(op2));
         }
 
         public static double Max(double op1, double op2)
@@ -294,17 +298,25 @@ namespace ChocolArm64.Instruction
             ulong op1_bits = (ulong)BitConverter.DoubleToInt64Bits(op1);
             ulong op2_bits = (ulong)BitConverter.DoubleToInt64Bits(op2);
 
-            if (((op1_bits | op2_bits) & 0x7FFF_FFFF_FFFF_FFFF) == 0)
+            if (((op1_bits | op2_bits) & 0x7FFFFFFFFFFFFFFF) == 0)
             {
                 // Return the most positive zero
                 return BitConverter.Int64BitsToDouble((long)(op1_bits & op2_bits));
             }
 
-            // If both values are NaNs, give priority to signaling NaNs
-            bool op1_snan = IsSNaN(op1_bits);
-            bool op2_snan = IsSNaN(op2_bits);
+            if (IsSNaN(op1_bits))
+            {
+                // op1 is SNaN, return QNaN op1
+                return BitConverter.Int64BitsToDouble((long)(op1_bits | (1ul << 51)));
+            }
 
-            if ((op1 > op2 || double.IsNaN(op1)) && (op1_snan || !op2_snan))
+            if (IsSNaN(op2_bits))
+            {
+                // op2 is SNaN, return QNaN op2
+                return BitConverter.Int64BitsToDouble((long)(op2_bits | (1ul << 51)));
+            }
+
+            if (op1 > op2 || IsQNaN(op1_bits))
             {
                 return op1;
             }
@@ -314,7 +326,9 @@ namespace ChocolArm64.Instruction
 
         public static float MinNum(float op1, float op2)
         {
-            return (float)MinNum((double)op1, (double)op2);
+            return (float)MinNum(
+                ConvertSingleToDoubleWithSNaN(op1),
+                ConvertSingleToDoubleWithSNaN(op2));
         }
 
         public static double MinNum(double op1, double op2)
@@ -336,7 +350,9 @@ namespace ChocolArm64.Instruction
 
         public static float Min(float op1, float op2)
         {
-            return (float)Min((double)op1, (double)op2);
+            return (float)Min(
+                ConvertSingleToDoubleWithSNaN(op1),
+                ConvertSingleToDoubleWithSNaN(op2));
         }
 
         public static double Min(double op1, double op2)
@@ -344,17 +360,25 @@ namespace ChocolArm64.Instruction
             ulong op1_bits = (ulong)BitConverter.DoubleToInt64Bits(op1);
             ulong op2_bits = (ulong)BitConverter.DoubleToInt64Bits(op2);
 
-            if (((op1_bits | op2_bits) & 0x7FFF_FFFF_FFFF_FFFF) == 0)
+            if (((op1_bits | op2_bits) & 0x7FFFFFFFFFFFFFFF) == 0)
             {
                 // Return the most negative zero
                 return BitConverter.Int64BitsToDouble((long)(op1_bits | op2_bits));
             }
 
-            // If both values are NaNs, give priority to signaling NaNs
-            bool op1_snan = IsSNaN(op1_bits);
-            bool op2_snan = IsSNaN(op2_bits);
+            if (IsSNaN(op1_bits))
+            {
+                // op1 is SNaN, return QNaN op1
+                return BitConverter.Int64BitsToDouble((long)(op1_bits | (1ul << 51)));
+            }
 
-            if ((op1 < op2 || double.IsNaN(op1)) && (op1_snan || !op2_snan))
+            if (IsSNaN(op2_bits))
+            {
+                // op2 is SNaN, return QNaN op2
+                return BitConverter.Int64BitsToDouble((long)(op2_bits | (1ul << 51)));
+            }
+
+            if (op1 < op2 || IsQNaN(op1_bits))
             {
                 return op1;
             }
@@ -362,16 +386,39 @@ namespace ChocolArm64.Instruction
             return op2;
         }
 
+        private static double ConvertSingleToDoubleWithSNaN(float x)
+        {
+            if (!float.IsNaN(x))
+            {
+                return (double)x;
+            }
+
+            ulong x_bits = (ulong)BitConverter.DoubleToInt64Bits(x);
+
+            if (IsSNaN((uint)BitConverter.SingleToInt32Bits(x)))
+            {
+                x_bits &= ~(1ul << 51);
+            }
+
+            return BitConverter.Int64BitsToDouble((long)x_bits);
+        }
+
         private static bool IsQNaN(ulong x)
         {
-            return (x & 0x000F_FFFF_FFFF_FFFF) != 0 &&
-                   (x & 0x7FF8_0000_0000_0000) == 0x7FF8_0000_0000_0000;
+            return (x & 0x000FFFFFFFFFFFFF) != 0 &&
+                   (x & 0x7FF8000000000000) == 0x7FF8000000000000;
+        }
+
+        private static bool IsSNaN(uint x)
+        {
+            return (x & 0x007FFFFF) != 0 &&
+                   (x & 0x7FC00000) == 0x7F800000;
         }
 
         private static bool IsSNaN(ulong x)
         {
-            return (x & 0x000F_FFFF_FFFF_FFFF) != 0 &&
-                   (x & 0x7FF8_0000_0000_0000) == 0x7FF0_0000_0000_0000;
+            return (x & 0x000FFFFFFFFFFFFF) != 0 &&
+                   (x & 0x7FF8000000000000) == 0x7FF0000000000000;
         }
     }
 }
