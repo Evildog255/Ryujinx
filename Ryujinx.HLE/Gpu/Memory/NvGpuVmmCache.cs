@@ -102,16 +102,7 @@ namespace Ryujinx.HLE.Gpu.Memory
         {
             bool[] Modified = Memory.IsRegionModified(PA, Size);
 
-            if (Modified == null)
-            {
-                return true;
-            }
-
             ClearCachedPagesIfNeeded();
-
-            long PageSize = Memory.GetHostPageSize();
-
-            long Mask = PageSize - 1;
 
             long PAEnd = PA + Size;
 
@@ -121,9 +112,9 @@ namespace Ryujinx.HLE.Gpu.Memory
 
             while (PA < PAEnd)
             {
-                long Key = PA & ~Mask;
+                long Key = PA & ~AMemory.PageMask;
 
-                long PAPgEnd = Math.Min((PA + PageSize) & ~Mask, PAEnd);
+                long PAPgEnd = Math.Min((PA + AMemory.PageSize) & ~AMemory.PageMask, PAEnd);
 
                 bool IsCached = Cache.TryGetValue(Key, out CachedPage Cp);
 
